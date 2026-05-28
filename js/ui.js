@@ -7,7 +7,7 @@ class UIManager {
 
     setupEventListeners() {
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab, e.target));
         });
         document.getElementById('stageFilter')?.addEventListener('change', () => this.applyFilters());
         document.getElementById('statusFilter')?.addEventListener('change', () => this.applyFilters());
@@ -30,11 +30,11 @@ class UIManager {
         });
     }
 
-    switchTab(tabName) {
+    switchTab(tabName, target) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabName)?.classList.add('active');
-        event.target.classList.add('active');
+        if (target) target.classList.add('active');
         this.currentTab = tabName;
         if (tabName === 'matches') this.loadMatches();
         else if (tabName === 'standings') this.loadStandings();

@@ -5,7 +5,7 @@ class AdminPanel {
 
     setupEventListeners() {
         document.querySelectorAll('.admin-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchAdminTab(e.target.dataset.adminTab));
+            btn.addEventListener('click', (e) => this.switchAdminTab(e.target.dataset.adminTab, e.target));
         });
         document.getElementById('updateApiKey')?.addEventListener('click', () => this.updateApiKey());
         document.getElementById('updateAppsScriptUrl')?.addEventListener('click', () => this.updateAppsScriptUrl());
@@ -21,11 +21,12 @@ class AdminPanel {
         document.getElementById('manualSync')?.addEventListener('click', () => this.manualSync());
     }
 
-    switchAdminTab(tabName) {
+    switchAdminTab(tabName, target) {
         document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
         const tab = document.getElementById('admin' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-        if (tab) { tab.classList.add('active'); event.target.classList.add('active'); }
+        if (tab) { tab.classList.add('active'); }
+        if (target) target.classList.add('active');
     }
 
     showNotification(message, type = 'info') {

@@ -7,7 +7,13 @@ class AuthManager {
     }
 
     setupEventListeners() {
-        document.getElementById('loginForm')?.addEventListener('submit', (e) => this.handleLogin(e));
+        const form = document.getElementById('loginForm');
+        if (form) {
+            form.addEventListener('submit', (e) => this.handleLogin(e));
+            console.log('AuthManager: loginForm listener attached');
+        } else {
+            console.error('AuthManager: loginForm not found!');
+        }
         document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
     }
 

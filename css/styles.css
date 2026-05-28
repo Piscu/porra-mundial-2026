@@ -37,8 +37,8 @@ body {
     top: 0;
     left: 0;
     z-index: 9999;
-    opacity: 1;
-    visibility: visible;
+    opacity: 0;
+    visibility: hidden;
     transition: all 0.3s ease;
 }
 
