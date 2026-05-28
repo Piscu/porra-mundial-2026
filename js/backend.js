@@ -59,7 +59,7 @@ class BackendAPI {
             case 'validateUser': {
                 const admin = this.getLocalAdminCredentials();
                 if (params.username === admin.username && params.password === admin.password) {
-                    return { success: true, userId: 1, username: admin.username, isAdmin: true, token: Utilities?.getUuid?.() || 'local-token-' + Date.now() };
+                    return { success: true, userId: 1, username: admin.username, isAdmin: true, token: 'local-token-' + Date.now() };
                 }
                 return { success: false, message: 'Usuario o contrasena incorrectos' };
             }
@@ -72,9 +72,6 @@ class BackendAPI {
                 return { success: false, message: 'Contrasena actual incorrecta' };
             }
             case 'savePrediction': {
-                let preds = getFromLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS) || {};
-                preds[params.matchId] = { matchId: params.matchId, homeTeam: params.homeTeam, awayTeam: params.awayTeam, goals1: params.goals1, goals2: params.goals2, timestamp: new Date().toISOString() };
-                saveToLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS, preds);
                 return { success: true };
             }
             case 'getPredictions': {
@@ -87,7 +84,8 @@ class BackendAPI {
                 return { success: true, predictions: Object.values(preds) };
             }
             case 'getScores': {
-                return { success: true, scores: [{ username: params.username || 'admin', totalPoints: 0, correctPredictions: 0 }] };
+                const admin = this.getLocalAdminCredentials();
+                return { success: true, scores: [{ username: admin.username, totalPoints: 0, correctPredictions: 0 }] };
             }
             case 'getUsers': {
                 const admin = this.getLocalAdminCredentials();
