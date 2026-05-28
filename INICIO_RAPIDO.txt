@@ -1,0 +1,62 @@
+Hola, bienvenido a Porra Mundial 2026! 🏆
+
+Aquí te doy una guía rápida para empezar:
+
+📋 PASOS RÁPIDOS:
+
+1️⃣ OBTÉN TU API KEY
+   - Ve a: https://www.football-data.org/
+   - Sign Up (es gratis)
+   - Verifica tu email
+   - Copia tu API Key desde tu perfil
+
+2️⃣ CONFIGURA GOOGLE SHEETS + GOOGLE APPS SCRIPT
+   - Lee: GOOGLE_APPS_SCRIPT_SETUP.md (IMPORTANTE)
+   - Crea un Google Sheet con 4 hojas: Usuarios, Predicciones, Puntuaciones, Configuración
+   - Crea un Google Apps Script como backend
+   - Copia la URL del deployment del Apps Script
+
+3️⃣ SUBE A GITHUB PAGES
+   - Crea repo: porra-mundial-2026
+   - Sube los archivos: git push
+   - Settings → Pages
+   - Branch: main
+
+4️⃣ CONFIGURACIÓN INICIAL (ADMIN)
+   - Abre tu app en el navegador
+   - Primera vez: login con credenciales de admin (del Google Sheet)
+   - Ve a ⚙️ Admin → Configuración General
+   - Pega tu API Key de football-data.org
+   - Pega URL del Google Apps Script
+   - Actualiza Sheet ID
+
+5️⃣ CREA CUENTAS PARA TUS AMIGOS
+   - Admin → Usuarios → Agregar Nuevo Participante
+   - Dale a cada amigo su nombre y contraseña temporal
+
+6️⃣ ¡A HACER PORRAS!
+   - Tus amigos se loguean con sus credenciales
+   - Pestaña "Partidos" → "Hacer predicción"
+   - Ver "Clasificación General" para ver ranking
+   - Tú (admin) controlas puntuaciones y configuración
+
+💡 TIPS:
+   - Los datos se guardan en Google Sheets (sincronizados)
+   - Admin puede cambiar el sistema de puntuación
+   - Admin puede ver todas las predicciones
+   - Los amigos solo ven sus propias predicciones
+
+⚠️ IMPORTANTE:
+   - Lee GOOGLE_APPS_SCRIPT_SETUP.md antes de empezar
+   - Protege tu Admin Secret
+   - Guarda copias de seguridad
+
+🔗 LINKS ÚTILES:
+   - football-data.org: https://www.football-data.org/
+   - GitHub Pages: https://pages.github.com/
+   - Google Sheets: https://sheets.google.com/
+   - Google Apps Script: https://script.google.com/
+
+¿Preguntas? Ver README.md para más detalles.
+
+¡Que disfrutes la porra! ⚽

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porra Mundial 2026</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="login-screen active">
+        <div class="login-container">
+            <h1>⚽ Porra Mundial 2026</h1>
+            <p class="login-subtitle">Ingresa para continuar</p>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Nombre de usuario:</label>
+                    <input type="text" id="username" placeholder="Tu nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" placeholder="Tu contraseña" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+                
+                <p class="login-note">🔒 Tu contraseña se guarda solo en tu navegador</p>
+            </form>
+            
+            <div id="loginError" class="error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Aplicación Principal -->
+    <div id="appScreen" class="app-screen" style="display: none;">
+        <div class="container">
+            <header>
+                <div class="header-content">
+                    <div>
+                        <h1>⚽ Porra Mundial 2026</h1>
+                        <p class="subtitle">Haz tus predicciones y compite con tus amigos</p>
+                    </div>
+                    <div class="header-user">
+                        <span id="currentUser">Usuario</span>
+                        <button class="btn btn-secondary btn-small" id="logoutBtn">Cerrar sesión</button>
+                    </div>
+                </div>
+            </header>
+
+            <nav class="nav-tabs">
+                <button class="nav-btn active" data-tab="matches">Partidos</button>
+                <button class="nav-btn" data-tab="standings">Clasificación</button>
+                <button class="nav-btn" data-tab="leaderboard">Clasificación General</button>
+                <button class="nav-btn admin-only" data-tab="admin" style="display: none;">⚙️ Admin</button>
+                <button class="nav-btn" data-tab="settings">Configuración</button>
+            </nav>
+
+        <!-- Tab: Matches -->
+        <section id="matches" class="tab-content active">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="stageFilter">Fase:</label>
+                    <select id="stageFilter">
+                        <option value="">Todas</option>
+                        <option value="GROUP_STAGE">Fase de Grupos</option>
+                        <option value="KNOCKOUT_ROUND">Fases Eliminatorias</option>
+                        <option value="FINAL">Final</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Estado:</label>
+                    <select id="statusFilter">
+                        <option value="">Todos</option>
+                        <option value="SCHEDULED">Por Jugar</option>
+                        <option value="IN_PLAY">En Juego</option>
+                        <option value="FINISHED">Terminados</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="matchesContainer" class="matches-container">
+                <div class="loading">Cargando partidos...</div>
+            </div>
+        </section>
+
+        <!-- Tab: Standings -->
+        <section id="standings" class="tab-content">
+            <div id="standingsContainer" class="standings-container">
+                <div class="loading">Cargando clasificación...</div>
+            </div>
+        </section>
+
+        <!-- Tab: Leaderboard -->
+        <section id="leaderboard" class="tab-content">
+            <div id="leaderboardContainer" class="leaderboard-container">
+                <div class="loading">Cargando clasificación general...</div>
+            </div>
+        </section>
+
+        <!-- Tab: Admin (Solo para Admin) -->
+        <section id="admin" class="tab-content admin-section">
+            <div class="admin-panel">
+                <h2>Panel de Administrador</h2>
+                
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" data-admin-tab="general">Configuración General</button>
+                    <button class="admin-tab-btn" data-admin-tab="scores">Puntuaciones</button>
+                    <button class="admin-tab-btn" data-admin-tab="users">Usuarios</button>
+                    <button class="admin-tab-btn" data-admin-tab="backup">Respaldo</button>
+                </div>
+
+                <!-- Admin Tab: General -->
+                <div id="adminGeneral" class="admin-tab-content active">
+                    <div class="settings-group">
+                        <h3>API Key de football-data.org</h3>
+                        <input type="password" id="adminApiKey" placeholder="Tu API Key" class="input-field">
+                        <button class="btn btn-primary" id="updateApiKey">Actualizar API Key</button>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Google Apps Script URL</h3>
+                        <p class="info-text">URL del Apps Script que conecta con Google Sheets</p>
+                        <input type="text" id="appsScriptUrl" placeholder="https://script.google.com/macros/d/..." class="input-field">
+                        <button class="btn btn-primary" id="updateAppsScriptUrl">Actualizar URL</button>
+                        <p class="info-text" style="margin-top: 10px; color: #fb8c00;">⚠️ <a href="#" id="appsScriptGuide">Ver guía para crear Google Apps Script</a></p>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Google Sheet ID</h3>
+                        <input type="text" id="adminSheetId" placeholder="ID del Google Sheet" class="input-field">
+                        <button class="btn btn-primary" id="updateSheetId">Actualizar Sheet ID</button>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Frase Secreta del Admin</h3>
+                        <input type="password" id="adminSecret" placeholder="Contraseña admin" class="input-field">
+                        <button class="btn btn-primary" id="updateAdminSecret">Cambiar Contraseña Admin</button>
+                    </div>
+                </div>
+
+                <!-- Admin Tab: Scores -->
+                <div id="adminScores" class="admin-tab-content">
+                    <div class="settings-group">
+                        <h3>Sistema de Puntuación</h3>
+                        <p class="info-text">Ajusta los puntos para cada tipo de acierto</p>
+                        
+                        <div class="score-config">
+                            <div class="score-input">
+                                <label>Resultado exacto:</label>
+                                <input type="number" id="exactScorePoints" value="3" min="0" max="10">
+                                <span>puntos</span>
+                            </div>
+                            
+                            <div class="score-input">
+                                <label>Ganador/Empate correcto:</label>
+                                <input type="number" id="winnerScorePoints" value="1" min="0" max="10">
+                                <span>puntos</span>
+                            </div>
+                            
+                            <div class="score-input">
+                                <label>Diferencia de goles:</label>
+                                <input type="number" id="diffScorePoints" value="1" min="0" max="10">
+                                <span>puntos</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="updateScoreConfig">Guardar Configuración de Puntos</button>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Recalcular Todas las Puntuaciones</h3>
+                        <button class="btn btn-warning" id="recalculateScores">Recalcular</button>
+                        <p class="info-text">Esto recalculará las puntuaciones de todos los participantes según los scores finales</p>
+                    </div>
+                </div>
+
+                <!-- Admin Tab: Users -->
+                <div id="adminUsers" class="admin-tab-content">
+                    <div class="settings-group">
+                        <h3>Gestionar Participantes</h3>
+                        <button class="btn btn-primary" id="reloadUsers">Recargar Lista</button>
+                        
+                        <div id="usersList" class="users-list">
+                            <div class="loading">Cargando usuarios...</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Agregar Nuevo Participante</h3>
+                        <div class="form-group">
+                            <input type="text" id="newUserName" placeholder="Nombre del participante" class="input-field">
+                            <input type="password" id="newUserPassword" placeholder="Contraseña temporal" class="input-field">
+                            <button class="btn btn-primary" id="addNewUser">Agregar Participante</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Tab: Backup -->
+                <div id="adminBackup" class="admin-tab-content">
+                    <div class="settings-group">
+                        <h3>Respaldo y Recuperación</h3>
+                        <button class="btn btn-secondary" id="exportBackup">Descargar Respaldo Completo</button>
+                        <button class="btn btn-secondary" id="syncWithSheets">Sincronizar con Google Sheets</button>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Sincronización</h3>
+                        <div id="syncStatus" class="info-text">Estado: listo</div>
+                        <button class="btn btn-primary" id="manualSync">Sincronizar Ahora</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Settings -->
+        <section id="settings" class="tab-content">
+            <div class="settings-panel">
+                <h2>Configuración</h2>
+                
+                <div class="settings-group">
+                    <h3>Mi Perfil</h3>
+                    <div class="user-profile">
+                        <p><strong>Usuario:</strong> <span id="profileUsername">-</span></p>
+                        <button class="btn btn-secondary" id="changePassword">Cambiar Contraseña</button>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Información del Sistema</h3>
+                    <button class="btn btn-secondary" id="clearCache">Limpiar Caché</button>
+                    <button class="btn btn-secondary" id="exportData">Exportar Mis Datos</button>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Ayuda</h3>
+                    <p class="info-text">
+                        Para preguntas o problemas, contacta con el administrador de la porra.
+                    </p>
+                </div>
+            </div>
+        </section>
+        </div>
+    </div>
+
+    <!-- Modal para hacer predicciones -->
+    <div id="predictionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="matchTitle">Predicción de Partido</h2>
+            <div id="matchInfo" class="match-info"></div>
+            
+            <form id="predictionForm">
+                <div class="prediction-input-group">
+                    <label>Goles equipo 1:</label>
+                    <input type="number" id="goals1" min="0" max="20" required>
+                </div>
+                <div class="prediction-input-group">
+                    <label>Goles equipo 2:</label>
+                    <input type="number" id="goals2" min="0" max="20" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelPrediction">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Predicción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para cambiar contraseña -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Cambiar Contraseña</h2>
+            
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Contraseña actual:</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Nueva contraseña:</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirmar nueva contraseña:</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelPassword">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para guía de Google Apps Script -->
+    <div id="appsScriptModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Crear Google Apps Script</h2>
+            
+            <div class="guide-content">
+                <p><strong>Paso 1:</strong> Ve a <a href="https://script.google.com/" target="_blank">script.google.com</a></p>
+                <p><strong>Paso 2:</strong> Crea un nuevo proyecto</p>
+                <p><strong>Paso 3:</strong> Copia y pega el código de <a href="#" id="downloadScript">aquí</a></p>
+                <p><strong>Paso 4:</strong> Deploy → Nuevo deployment → Type: Web app</p>
+                <p><strong>Paso 5:</strong> Copia la URL de deployment y pégala aquí</p>
+                
+                <div id="scriptCode" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                    <pre><code id="codeBlock"></code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Hecha con ❤️ para el Mundial 2026 | <a href="https://www.football-data.org/">football-data.org</a></p>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/backend.js"></script>
+    <script src="js/sheets.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
