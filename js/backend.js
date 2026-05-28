@@ -12,9 +12,18 @@ class BackendAPI {
         saveToLocalStorage(CONFIG.STORAGE_KEYS.APPS_SCRIPT_URL, url);
     }
 
+    getLocalAdminCredentials() {
+        const stored = getFromLocalStorage('porra_local_admin');
+        return stored || { username: 'admin', password: 'admin123' };
+    }
+
+    setLocalAdminCredentials(username, password) {
+        saveToLocalStorage('porra_local_admin', { username, password });
+    }
+
     async call(functionName, params = {}) {
         if (!this.appsScriptUrl) {
-            throw new Error('Apps Script URL no configurado');
+            return this.callLocal(functionName, params);
         }
 
         try {
@@ -45,6 +54,50 @@ class BackendAPI {
         }
     }
 
+    callLocal(functionName, params = {}) {
+        switch (functionName) {
+            case 'validateUser': {
+                const admin = this.getLocalAdminCredentials();
+                if (params.username === admin.username && params.password === admin.password) {
+                    return { success: true, userId: 1, username: admin.username, isAdmin: true, token: Utilities?.getUuid?.() || 'local-token-' + Date.now() };
+                }
+                return { success: false, message: 'Usuario o contrasena incorrectos' };
+            }
+            case 'changeUserPassword': {
+                const admin = this.getLocalAdminCredentials();
+                if (params.username === admin.username && params.currentPassword === admin.password) {
+                    this.setLocalAdminCredentials(params.username, params.newPassword);
+                    return { success: true, message: 'Contrasena cambiada correctamente' };
+                }
+                return { success: false, message: 'Contrasena actual incorrecta' };
+            }
+            case 'savePrediction': {
+                let preds = getFromLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS) || {};
+                preds[params.matchId] = { matchId: params.matchId, homeTeam: params.homeTeam, awayTeam: params.awayTeam, goals1: params.goals1, goals2: params.goals2, timestamp: new Date().toISOString() };
+                saveToLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS, preds);
+                return { success: true };
+            }
+            case 'getPredictions': {
+                const preds = getFromLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS) || {};
+                const userPreds = Object.values(preds).filter(p => p.username === params.username || !p.username);
+                return { success: true, predictions: userPreds };
+            }
+            case 'getAllPredictions': {
+                const preds = getFromLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS) || {};
+                return { success: true, predictions: Object.values(preds) };
+            }
+            case 'getScores': {
+                return { success: true, scores: [{ username: params.username || 'admin', totalPoints: 0, correctPredictions: 0 }] };
+            }
+            case 'getUsers': {
+                const admin = this.getLocalAdminCredentials();
+                return { success: true, users: [{ username: admin.username, isAdmin: true }] };
+            }
+            default:
+                return { success: true };
+        }
+    }
+
     // Autenticación
     async validateUser(username, password) {
         return this.call('validateUser', { username, password });
@@ -56,7 +109,9 @@ class BackendAPI {
 
     // Predicciones
     async savePrediction(matchId, homeTeam, awayTeam, goals1, goals2) {
+        const username = authManager?.currentUser?.username || getFromLocalStorage(CONFIG.STORAGE_KEYS.CURRENT_USER)?.username || '';
         return this.call('savePrediction', {
+            username,
             matchId,
             homeTeam,
             awayTeam,

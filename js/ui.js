@@ -240,7 +240,7 @@ class UIManager {
     }
 
     // Guardar predicción
-    savePrediction(e) {
+    async savePrediction(e) {
         e.preventDefault();
 
         if (!this.selectedMatch) return;
@@ -249,7 +249,7 @@ class UIManager {
         const goals2 = parseInt(document.getElementById('goals2').value);
 
         const predictions = getFromLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS) || {};
-        predictions[this.selectedMatch.id] = {
+        const prediction = {
             matchId: this.selectedMatch.id,
             homeTeam: this.selectedMatch.homeTeam,
             awayTeam: this.selectedMatch.awayTeam,
@@ -258,10 +258,20 @@ class UIManager {
             timestamp: new Date().toISOString()
         };
 
+        predictions[this.selectedMatch.id] = prediction;
         saveToLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS, predictions);
+
+        try {
+            const api = getBackendAPI() || window.backendAPI;
+            if (api) {
+                await api.savePrediction(this.selectedMatch.id, this.selectedMatch.homeTeam, this.selectedMatch.awayTeam, goals1, goals2);
+            }
+        } catch (err) {
+            console.warn('No se pudo guardar en backend:', err);
+        }
+
         this.closeModal();
         this.loadMatches();
-
         this.showNotification('Predicción guardada correctamente', 'success');
     }
 

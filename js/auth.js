@@ -28,8 +28,6 @@ class AuthManager {
         const errorDiv = document.getElementById('loginError');
         
         try {
-            // Validar credenciales con el backend
-            // Usar getBackendAPI() si está disponible, o fallback a window.backendAPI
             let api = null;
             if (typeof getBackendAPI === 'function') {
                 api = getBackendAPI();
@@ -37,7 +35,12 @@ class AuthManager {
             api = api || window.backendAPI || (typeof backendAPI !== 'undefined' ? backendAPI : null);
 
             if (!api) {
-                throw new Error('backendAPI no inicializado');
+                if (typeof BackendAPI !== 'undefined') {
+                    api = new BackendAPI('');
+                    window.backendAPI = api;
+                } else {
+                    throw new Error('backendAPI no inicializado');
+                }
             }
 
             const response = await api.validateUser(username, password);
