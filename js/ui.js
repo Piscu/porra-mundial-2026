@@ -76,16 +76,24 @@ class UIManager {
         return map[status] || status;
     }
 
+    getStageBadge(stage) {
+        const name = getStageName(stage);
+        let cls = 'group';
+        if (stage === 'ROUND_16' || stage === 'QUARTER_FINALS' || stage === 'SEMI_FINALS' || stage === 'PLAYOFF') cls = 'knockout';
+        if (stage === 'FINAL' || stage === 'THIRD_PLACE') cls = 'final';
+        return `<span class="match-stage-badge ${cls}">${name}</span>`;
+    }
+
     createMatchCard(match) {
         const card = document.createElement('div');
         card.className = 'match-card';
         const home = match.homeTeam.name, away = match.awayTeam.name;
-        const date = new Date(match.utcDate).toLocaleString('es-ES');
+        const date = new Date(match.utcDate).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
         let scoreHTML = '';
         const statusClass = 'status-' + match.status.toLowerCase();
         const statusText = this.getStatusText(match.status);
 
-        if (match.status === 'FINISHED' && match.score?.fullTime) {
+        if (match.status === 'FINISHED' && match.score?.fullTime && match.score.fullTime.home !== null) {
             scoreHTML = `<div class="score-display">${match.score.fullTime.home} - ${match.score.fullTime.away}</div>`;
         } else if (match.status === 'IN_PLAY') {
             const hs = match.score?.fullTime?.home ?? match.score?.halfTime?.home ?? '-';
@@ -95,15 +103,15 @@ class UIManager {
 
         const predictions = getFromLocalStorage(CONFIG.STORAGE_KEYS.PREDICTIONS) || {};
         const pred = predictions[match.id];
-        let predHTML = pred ? `<div class="match-status" style="background:#e8f5e9;color:#2e7d32;">Mi prediccion: ${pred.goals1} - ${pred.goals2}</div>` : '';
-        let btnHTML = (match.status === 'SCHEDULED' || match.status === 'TIMED') ? `<button class="btn btn-primary" onclick="uiManager.openPredictionModal(${match.id},'${home}','${away}')">Hacer prediccion</button>` : '';
+        let predHTML = pred ? `<div class="match-status" style="background:rgba(46,160,67,0.12);color:#3fb950;">Mi prediccion: ${pred.goals1} - ${pred.goals2}</div>` : '';
+        let btnHTML = (match.status === 'SCHEDULED' || match.status === 'TIMED') ? `<button class="btn btn-primary" onclick="uiManager.openPredictionModal(${match.id},'${home.replace(/'/g, "\\'")}','${away.replace(/'/g, "\\'")}')">Hacer prediccion</button>` : '';
 
         card.innerHTML = `
-            <div class="match-header"><span class="match-date">${date}</span><span class="match-stage">${match.stage}</span></div>
+            <div class="match-header"><span class="match-date">${date}</span>${this.getStageBadge(match.stage)}</div>
             <div class="match-teams">
-                <div class="team"><div class="team-flag">${getFlag(home)}</div><div class="team-name">${home}</div></div>
+                <div class="team"><div>${getFlag(home)}</div><div class="team-name">${home}</div></div>
                 <div class="vs">VS</div>
-                <div class="team"><div class="team-flag">${getFlag(away)}</div><div class="team-name">${away}</div></div>
+                <div class="team"><div>${getFlag(away)}</div><div class="team-name">${away}</div></div>
             </div>
             ${scoreHTML}${predHTML}
             <div class="match-status ${statusClass}">${statusText}</div>
