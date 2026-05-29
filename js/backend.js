@@ -5,10 +5,11 @@ class BackendAPI {
 
     async call(functionName, params = {}) {
         if (!this.appsScriptUrl) throw new Error('Apps Script URL no configurado');
+        var bodyObj = {}; bodyObj["function"] = functionName; bodyObj.params = params; bodyObj.token = getFromLocalStorage(CONFIG.STORAGE_KEYS.SESSION_TOKEN);
         const response = await fetch(this.appsScriptUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ function: functionName, params, token: getFromLocalStorage(CONFIG.STORAGE_KEYS.SESSION_TOKEN) })
+            body: JSON.stringify(bodyObj)
         });
         const result = await response.json();
         if (result.error) throw new Error(result.error);

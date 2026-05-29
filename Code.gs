@@ -17,13 +17,33 @@ function handleApiProxy(params) {
   }
 }
 
+var ROUTES = {
+  validateUser: validateUser,
+  changeUserPassword: changeUserPassword,
+  savePrediction: savePrediction,
+  getPredictions: getPredictions,
+  getAllPredictions: getAllPredictions,
+  getScores: getScores,
+  updateScoreConfig: updateScoreConfig,
+  recalculateScores: recalculateScores,
+  getUsers: getUsers,
+  addUser: addUser,
+  removeUser: removeUser,
+  updateApiKey: updateApiKey,
+  getApiKey: getApiKey,
+  updateAdminSecret: updateAdminSecret,
+  syncWithSheets: syncWithSheets,
+  getStatus: getStatus,
+  handleApiProxy: handleApiProxy
+};
+
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const fn = data.function;
-    const params = data.params || {};
-    if (typeof this[fn] === "function") {
-      const result = this[fn](params);
+    var fn = data["function"];
+    var params = data.params || {};
+    if (ROUTES[fn]) {
+      var result = ROUTES[fn](params);
       return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
     }
     return ContentService.createTextOutput(JSON.stringify({ error: "Funcion no encontrada" })).setMimeType(ContentService.MimeType.JSON);
