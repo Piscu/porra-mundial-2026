@@ -3,6 +3,7 @@ class UIManager {
         this.currentTab = 'matches';
         this.selectedMatch = null;
         this.setupEventListeners();
+        setTimeout(() => this.switchTab('matches'), 100);
     }
 
     setupEventListeners() {
@@ -48,20 +49,20 @@ class UIManager {
         try {
             const api = getFootballAPI();
             if (!api) {
-                container.innerHTML = '<div class="error">Configura tu API Key en Admin</div>';
+                container.innerHTML = '<div class="error">Configura tu API Key en Admin (verifica que este guardada)</div>';
                 return;
             }
             const matchesData = await api.getMatches();
             const matches = matchesData.matches || [];
             if (matches.length === 0) {
-                container.innerHTML = '<div class="error">No hay partidos disponibles</div>';
+                container.innerHTML = '<div class="error">No hay partidos disponibles. Puede que el Mundial 2026 aun no este cargado en la API.</div>';
                 return;
             }
             const filtered = this.filterMatches(matches);
             container.innerHTML = '';
             filtered.forEach(match => container.appendChild(this.createMatchCard(match)));
         } catch (error) {
-            container.innerHTML = '<div class="error">Error cargando partidos: ' + error.message + '</div>';
+            container.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
         }
     }
 

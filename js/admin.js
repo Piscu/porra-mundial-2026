@@ -1,6 +1,7 @@
 class AdminPanel {
     constructor() {
         this.setupEventListeners();
+        this.loadSavedSettings();
     }
 
     setupEventListeners() {
@@ -29,6 +30,21 @@ class AdminPanel {
         if (target) target.classList.add('active');
     }
 
+    loadSavedSettings() {
+        const savedKey = getFromLocalStorage(CONFIG.STORAGE_KEYS.API_KEY);
+        if (savedKey) document.getElementById('adminApiKey').value = savedKey;
+        const savedUrl = getFromLocalStorage(CONFIG.STORAGE_KEYS.APPS_SCRIPT_URL);
+        if (savedUrl) document.getElementById('appsScriptUrl').value = savedUrl;
+        const savedSheetId = getFromLocalStorage(CONFIG.STORAGE_KEYS.SHEET_ID);
+        if (savedSheetId) document.getElementById('adminSheetId').value = savedSheetId;
+        const savedConfig = getFromLocalStorage(CONFIG.STORAGE_KEYS.SCORE_CONFIG);
+        if (savedConfig) {
+            if (savedConfig.exactScore) document.getElementById('exactScorePoints').value = savedConfig.exactScore;
+            if (savedConfig.winnerScore) document.getElementById('winnerScorePoints').value = savedConfig.winnerScore;
+            if (savedConfig.diffScore) document.getElementById('diffScorePoints').value = savedConfig.diffScore;
+        }
+    }
+
     showNotification(message, type = 'info') {
         const el = document.createElement('div');
         el.className = type;
@@ -42,7 +58,6 @@ class AdminPanel {
         const key = document.getElementById('adminApiKey').value.trim();
         if (!key) return this.showNotification('Ingresa una API Key', 'error');
         saveToLocalStorage(CONFIG.STORAGE_KEYS.API_KEY, key);
-        document.getElementById('adminApiKey').value = '';
         if (typeof initFootballAPI === 'function') initFootballAPI(key);
         this.showNotification('API Key guardada', 'success');
     }
