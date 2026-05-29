@@ -4,6 +4,28 @@ function getSheet(name) {
   return SpreadsheetApp.openById(SHEET_ID).getSheetByName(name);
 }
 
+function doGet(e) {
+  const path = e.parameter.path || "";
+  if (path === "proxy") {
+    const endpoint = e.parameter.endpoint || "";
+    return handleApiProxy(endpoint);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ error: "Endpoint no valido" })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleApiProxy(endpoint) {
+  try {
+    const apiKey = getApiKeyFromSheet();
+    if (!apiKey) return ContentService.createTextOutput(JSON.stringify({ error: "API Key no configurada en el Sheet" })).setMimeType(ContentService.MimeType.JSON);
+    const url = "https://api.football-data.org/v4/" + endpoint;
+    const response = UrlFetchApp.fetch(url, { headers: { "X-Auth-Token": apiKey }, muteHttpExceptions: true });
+    const output = ContentService.createTextOutput(response.getContentText()).setMimeType(ContentService.MimeType.JSON);
+    return output;
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ error: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);

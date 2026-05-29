@@ -63,6 +63,10 @@ class AdminPanel {
         if (!key) return this.showNotification('Ingresa una API Key', 'error');
         saveToLocalStorage(CONFIG.STORAGE_KEYS.API_KEY, key);
         if (typeof initFootballAPI === 'function') initFootballAPI(key);
+        const backend = getBackendAPI();
+        if (backend) {
+            backend.updateApiKey(key).catch(() => {});
+        }
         this.showNotification('API Key guardada', 'success');
     }
 
@@ -141,9 +145,13 @@ async function handleRequest(request) {
         document.getElementById('guideContent').innerHTML = `
             <p><strong>Paso 1:</strong> Ve a <a href="https://script.google.com/" target="_blank">script.google.com</a></p>
             <p><strong>Paso 2:</strong> Crea un nuevo proyecto</p>
-            <p><strong>Paso 3:</strong> Copia y pega el codigo de <code>Code.gs</code> (en el repositorio)</p>
+            <p><strong>Paso 3:</strong> Copia y pega el codigo de <code>Code.gs</code> (del repositorio)</p>
             <p><strong>Paso 4:</strong> Deploy → Nuevo deployment → Type: Web app → Execute as: Me → Anyone</p>
-            <p><strong>Paso 5:</strong> Copia la URL de deployment y pega aqui</p>
+            <p><strong>Paso 5:</strong> Copia la URL (ej: <code>https://script.google.com/macros/s/.../exec</code>)</p>
+            <p><strong>Paso 6:</strong> Pega esa URL en Admin → Google Apps Script URL</p>
+            <p style="margin-top:12px;padding:10px;background:rgba(46,160,67,0.08);border-radius:6px;color:#3fb950;">
+            ✅ El script ahora funciona como proxy de la API de football-data.org. No hace falta Cloudflare Worker!
+            </p>
         `;
         document.getElementById('guideModal').classList.add('active');
     }

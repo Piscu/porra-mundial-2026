@@ -1,9 +1,3 @@
-// Cloudflare Worker — proxy para football-data.org
-// 1. Ve a https://dash.cloudflare.com → Workers & Pages → Create application → Create Worker
-// 2. Copia y pega este codigo
-// 3. Deploy → copia la URL (ej: https://porra-proxy.nombre.workers.dev)
-// 4. Pega esa URL en Admin → Proxy URL
-
 addEventListener('fetch', event => {
     event.respondWith(handleRequest(event.request));
 });
