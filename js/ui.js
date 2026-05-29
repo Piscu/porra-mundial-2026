@@ -80,8 +80,8 @@ class UIManager {
     getStageBadge(stage) {
         const name = getStageName(stage);
         let cls = 'group';
-        if (stage === 'ROUND_16' || stage === 'QUARTER_FINALS' || stage === 'SEMI_FINALS' || stage === 'PLAYOFF') cls = 'knockout';
-        if (stage === 'FINAL' || stage === 'THIRD_PLACE') cls = 'final';
+        if (['LAST_32', 'LAST_16', 'ROUND_16', 'QUARTER_FINALS', 'SEMI_FINALS', 'PLAYOFF'].includes(stage)) cls = 'knockout';
+        if (['FINAL', 'THIRD_PLACE'].includes(stage)) cls = 'final';
         return `<span class="match-stage-badge ${cls}">${name}</span>`;
     }
 

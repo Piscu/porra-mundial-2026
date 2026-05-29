@@ -12,6 +12,8 @@ class AdminPanel {
         document.getElementById('updateAppsScriptUrl')?.addEventListener('click', () => this.updateAppsScriptUrl());
         document.getElementById('updateSheetId')?.addEventListener('click', () => this.updateSheetId());
         document.getElementById('updateAdminSecret')?.addEventListener('click', () => this.updateAdminSecret());
+        document.getElementById('updateCorsProxy')?.addEventListener('click', () => this.updateCorsProxy());
+        document.getElementById('corsProxyGuide')?.addEventListener('click', (e) => { e.preventDefault(); this.showCorsProxyGuide(); });
         document.getElementById('appsScriptGuide')?.addEventListener('click', (e) => { e.preventDefault(); this.showAppsScriptGuide(); });
         document.getElementById('updateScoreConfig')?.addEventListener('click', () => this.updateScoreConfig());
         document.getElementById('recalculateScores')?.addEventListener('click', () => this.recalculateScores());
@@ -37,6 +39,8 @@ class AdminPanel {
         if (savedUrl) document.getElementById('appsScriptUrl').value = savedUrl;
         const savedSheetId = getFromLocalStorage(CONFIG.STORAGE_KEYS.SHEET_ID);
         if (savedSheetId) document.getElementById('adminSheetId').value = savedSheetId;
+        const savedProxy = getFromLocalStorage(CONFIG.STORAGE_KEYS.CORS_PROXY);
+        if (savedProxy) document.getElementById('corsProxyUrl').value = savedProxy;
         const savedConfig = getFromLocalStorage(CONFIG.STORAGE_KEYS.SCORE_CONFIG);
         if (savedConfig) {
             if (savedConfig.exactScore) document.getElementById('exactScorePoints').value = savedConfig.exactScore;
@@ -84,8 +88,64 @@ class AdminPanel {
         this.showNotification('Contrasena de admin actualizada', 'success');
     }
 
+    updateCorsProxy() {
+        const url = document.getElementById('corsProxyUrl').value.trim();
+        if (!url) return this.showNotification('Ingresa la URL del Worker', 'error');
+        saveToLocalStorage(CONFIG.STORAGE_KEYS.CORS_PROXY, url);
+        if (typeof FootballDataAPI !== 'undefined') {
+            const api = getFootballAPI();
+            if (api) api.clearCache();
+        }
+        this.showNotification('Proxy URL guardada', 'success');
+    }
+
+    showCorsProxyGuide() {
+        document.getElementById('guideTitle').textContent = 'Crear Cloudflare Worker';
+        document.getElementById('guideContent').innerHTML = `
+            <p><strong>Paso 1:</strong> Ve a <a href="https://dash.cloudflare.com/" target="_blank">dash.cloudflare.com</a></p>
+            <p><strong>Paso 2:</strong> Workers & Pages → Create application → Create Worker</p>
+            <p><strong>Paso 3:</strong> Copia y pega el codigo de <code>worker.js</code> (en el repositorio)</p>
+            <p><strong>Paso 4:</strong> Deploy → copia la URL (ej: <code>https://porra-proxy.nombre.workers.dev</code>)</p>
+            <p><strong>Paso 5:</strong> Pega esa URL en Admin → Proxy CORS</p>
+            <div id="scriptCode" style="background:#161b22;padding:14px;border-radius:6px;margin-top:15px;max-height:300px;overflow-y:auto;font-size:0.85em;">
+                <pre><code>addEventListener(&#39;fetch&#39;, event => {
+    event.respondWith(handleRequest(event.request));
+});
+
+async function handleRequest(request) {
+    const url = new URL(request.url);
+    const targetUrl = &#39;https://api.football-data.org/v4&#39; + url.pathname + url.search;
+
+    const headers = new Headers(request.headers);
+    headers.set(&#39;Origin&#39;, &#39;http://localhost&#39;);
+
+    const response = await fetch(targetUrl, {
+        method: request.method, headers: headers,
+        body: request.method !== &#39;GET&#39; && request.method !== &#39;HEAD&#39; ? request.body : null
+    });
+
+    const corsHeaders = { &#39;Access-Control-Allow-Origin&#39;: &#39;*&#39;, &#39;Access-Control-Allow-Methods&#39;: &#39;GET, POST, OPTIONS&#39;, &#39;Access-Control-Allow-Headers&#39;: &#39;*&#39;, &#39;Access-Control-Max-Age&#39;: &#39;86400&#39; };
+    if (request.method === &#39;OPTIONS&#39;) return new Response(null, { headers: corsHeaders });
+
+    const responseHeaders = new Headers(response.headers);
+    Object.entries(corsHeaders).forEach(([k, v]) => responseHeaders.set(k, v));
+    return new Response(response.body, { status: response.status, headers: responseHeaders });
+}</code></pre>
+            </div>
+        `;
+        document.getElementById('guideModal').classList.add('active');
+    }
+
     showAppsScriptGuide() {
-        document.getElementById('appsScriptModal').classList.add('active');
+        document.getElementById('guideTitle').textContent = 'Crear Google Apps Script';
+        document.getElementById('guideContent').innerHTML = `
+            <p><strong>Paso 1:</strong> Ve a <a href="https://script.google.com/" target="_blank">script.google.com</a></p>
+            <p><strong>Paso 2:</strong> Crea un nuevo proyecto</p>
+            <p><strong>Paso 3:</strong> Copia y pega el codigo de <code>Code.gs</code> (en el repositorio)</p>
+            <p><strong>Paso 4:</strong> Deploy → Nuevo deployment → Type: Web app → Execute as: Me → Anyone</p>
+            <p><strong>Paso 5:</strong> Copia la URL de deployment y pega aqui</p>
+        `;
+        document.getElementById('guideModal').classList.add('active');
     }
 
     updateScoreConfig() {

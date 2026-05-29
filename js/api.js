@@ -18,6 +18,15 @@ class FootballDataAPI {
         };
     }
 
+    getRequestUrl(url) {
+        const proxyUrl = getFromLocalStorage(CONFIG.STORAGE_KEYS.CORS_PROXY);
+        if (proxyUrl) {
+            const sep = proxyUrl.includes('?') ? '&' : '?';
+            return `${proxyUrl}${sep}url=${encodeURIComponent(url)}`;
+        }
+        return url;
+    }
+
     // Obtener datos con caché
     async fetchWithCache(url, forceRefresh = false) {
         if (!forceRefresh && this.cache.has(url)) {
@@ -27,14 +36,19 @@ class FootballDataAPI {
             }
         }
 
+        const requestUrl = this.getRequestUrl(url);
+
         try {
-            const response = await fetch(url, { headers: this.getHeaders() });
+            const response = await fetch(requestUrl, { headers: this.getHeaders() });
             
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            let data = await response.json();
+            if (data && data.contents) {
+                try { data = JSON.parse(data.contents); } catch (e) { /* raw response */ }
+            }
             
             // Guardar en caché
             this.cache.set(url, {

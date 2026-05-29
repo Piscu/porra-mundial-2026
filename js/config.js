@@ -6,13 +6,14 @@ const CONFIG = {
         API_KEY: 'porra_api_key', SHEET_ID: 'porra_sheet_id',
         APPS_SCRIPT_URL: 'porra_apps_script_url', PREDICTIONS: 'porra_predictions',
         MATCHES_CACHE: 'porra_matches_cache', STANDINGS_CACHE: 'porra_standings_cache',
-        SCORE_CONFIG: 'porra_score_config', USERS: 'porra_users'
+        SCORE_CONFIG: 'porra_score_config', USERS: 'porra_users', CORS_PROXY: 'porra_cors_proxy'
     },
     CACHE_DURATION: 5 * 60 * 1000,
     DEFAULT_ADMIN: { username: 'admin', password: 'admin123' },
     SCORE_CONFIG_DEFAULTS: { exactScore: 3, winnerScore: 1, diffScore: 1 },
     STAGE_NAMES: {
-        'GROUP_STAGE': 'Fase de Grupos', 'ROUND_16': 'Octavos', 'QUARTER_FINALS': 'Cuartos',
+        'GROUP_STAGE': 'Fase de Grupos', 'LAST_32': 'Ronda de 32', 'LAST_16': 'Octavos',
+        'ROUND_16': 'Octavos', 'QUARTER_FINALS': 'Cuartos',
         'SEMI_FINALS': 'Semifinales', 'FINAL': 'Final', 'THIRD_PLACE': '3er Puesto',
         'PLAYOFF': 'Playoff', 'PRELIMINARY_ROUND': 'Ronda Preliminar',
         'QUALIFICATION': 'Clasificacion', 'QUALIFYING': 'Clasificacion'
