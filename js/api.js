@@ -18,21 +18,6 @@ class FootballDataAPI {
         };
     }
 
-    getRequestUrl(apiPath) {
-        const appsScriptUrl = getFromLocalStorage(CONFIG.STORAGE_KEYS.APPS_SCRIPT_URL);
-        if (appsScriptUrl) {
-            const baseUrl = appsScriptUrl.replace(/\/exec\/?$/, '/exec');
-            return `${baseUrl}?path=proxy&endpoint=${encodeURIComponent(apiPath)}`;
-        }
-        const proxyUrl = getFromLocalStorage(CONFIG.STORAGE_KEYS.CORS_PROXY);
-        if (proxyUrl) {
-            const fullUrl = this.baseUrl + '/' + apiPath;
-            const sep = proxyUrl.includes('?') ? '&' : '?';
-            return `${proxyUrl}${sep}url=${encodeURIComponent(fullUrl)}`;
-        }
-        return this.baseUrl + '/' + apiPath;
-    }
-
     // Obtener datos con caché
     async fetchWithCache(apiPath, forceRefresh = false) {
         const cacheKey = apiPath;
@@ -43,27 +28,34 @@ class FootballDataAPI {
             }
         }
 
-        const requestUrl = this.getRequestUrl(apiPath);
-
         try {
             const appsScriptUrl = getFromLocalStorage(CONFIG.STORAGE_KEYS.APPS_SCRIPT_URL);
-            const fetchOptions = appsScriptUrl ? {} : { headers: this.getHeaders() };
-            const response = await fetch(requestUrl, fetchOptions);
-            
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            let data;
+
+            if (appsScriptUrl) {
+                const baseUrl = appsScriptUrl.replace(/\/exec\/?$/, '/exec');
+                const body = JSON.stringify({ function: 'handleApiProxy', params: { endpoint: apiPath } });
+                const response = await fetch(baseUrl, {
+                    method: 'POST',
+                    body: body
+                });
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+                data = await response.json();
+                if (data && data.error) throw new Error(data.error);
+            } else {
+                const proxyUrl = getFromLocalStorage(CONFIG.STORAGE_KEYS.CORS_PROXY);
+                const fullUrl = proxyUrl
+                    ? proxyUrl + (proxyUrl.includes('?') ? '&' : '?') + 'url=' + encodeURIComponent(this.baseUrl + '/' + apiPath)
+                    : this.baseUrl + '/' + apiPath;
+                const response = await fetch(fullUrl, { headers: this.getHeaders() });
+                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+                data = await response.json();
+                if (data && data.contents) {
+                    try { data = JSON.parse(data.contents); } catch (e) { }
+                }
             }
 
-            let data = await response.json();
-            if (data && data.contents) {
-                try { data = JSON.parse(data.contents); } catch (e) { /* raw response */ }
-            }
-            
-            this.cache.set(cacheKey, {
-                data: data,
-                timestamp: Date.now()
-            });
-
+            this.cache.set(cacheKey, { data: data, timestamp: Date.now() });
             return data;
         } catch (error) {
             console.error('Error en API:', error);
